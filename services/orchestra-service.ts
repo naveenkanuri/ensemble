@@ -152,12 +152,9 @@ function formatDuration(durationMs: number): string {
     : `${durationMin}m`
 }
 
-function summarizeForTelegram(summaryPart: string): string {
-  return summaryPart
-    .replace(/\s+/g, ' ')
-    .replace(/\s*:\s*/g, ': ')
-    .trim()
-    .slice(0, 280)
+/** Escape special chars for Telegram MarkdownV2 */
+function escMd(s: string): string {
+  return s.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, '\\$1')
 }
 
 function sendTelegramSummary(params: {
@@ -165,15 +162,21 @@ function sendTelegramSummary(params: {
   task: string
   duration: string
   messageCount: number
-  summaryParts: string[]
+  agentSummaries: { name: string; msgs: number; tokens: string; lastMsg: string }[]
 }): void {
+  const agents = params.agentSummaries
+  const agentLines = agents.map(a => {
+    const last = a.lastMsg.slice(0, 150).replace(/\n/g, ' ')
+    return `*${escMd(a.name)}* \\(${a.msgs} msgs, ${escMd(a.tokens)}\\)\n_${escMd(last)}_`
+  })
+
   const text = [
-    `Team: ${params.teamName}`,
-    `Taak: ${params.task.slice(0, 100) || 'unknown'}`,
-    `Duur: ${params.duration}`,
-    `Berichten: ${params.messageCount}`,
-    '',
-    ...params.summaryParts.map(part => summarizeForTelegram(part)),
+    `\u2728 *Collab afgerond*`,
+    ``,
+    `\u{1F4CB} ${escMd(params.task.slice(0, 120))}`,
+    `\u23F1 ${escMd(params.duration)} \\| ${params.messageCount} berichten`,
+    ``,
+    ...agentLines,
   ].join('\n')
 
   const curl = spawn(
@@ -182,7 +185,8 @@ function sendTelegramSummary(params: {
       '-sS',
       '-X', 'POST',
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-      '--data-urlencode', `chat_id=${TELEGRAM_CHAT_ID}`,
+      '-d', `chat_id=${TELEGRAM_CHAT_ID}`,
+      '-d', `parse_mode=MarkdownV2`,
       '--data-urlencode', `text=${text}`,
     ],
     {
@@ -780,7 +784,11 @@ export async function disbandTeam(teamId: string): Promise<ServiceResult<{ team:
         task: team.description || 'unknown',
         duration,
         messageCount: agentMessages.length,
-        summaryParts,
+        agentSummaries: agents.map(agent => {
+          const msgs = agentMessages.filter(m => m.from === agent)
+          const last = msgs[msgs.length - 1]?.content || ''
+          return { name: agent, msgs: msgs.length, tokens: tokenUsageMap[agent] || 'unknown', lastMsg: last }
+        }),
       })
 
       // Detect the working directory as project hint
