@@ -12,7 +12,7 @@ title: Configuration
 |---|---|---|
 | `ENSEMBLE_PORT` | `23000` | Server listening port |
 | `ENSEMBLE_URL` | `http://localhost:23000` | CLI target URL |
-| `ENSEMBLE_DATA_DIR` | `~/.aimaestro` | Data directory for team persistence |
+| `ENSEMBLE_DATA_DIR` | `~/.ensemble` | Data directory for team persistence |
 | `ENSEMBLE_CORS_ORIGIN` | localhost only | Comma-separated allowed CORS origins |
 | `ENSEMBLE_PROJECT` | auto-detect | Project name for summaries |
 | `ENSEMBLE_AGENTS_CONFIG` | `./agents.json` | Path to custom agents config |
@@ -116,7 +116,7 @@ Use via API: `"templateName": "review"` in the create team request. The template
 
 ## Multi-host setup
 
-Run agents on different machines. Configure in `~/.aimaestro/hosts.json`:
+Run agents on different machines. Configure in `~/.ensemble/hosts.json`:
 
 ```json
 {

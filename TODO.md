@@ -18,7 +18,7 @@
 |---|-------|
 | 1 | Geen test suite — geen test/lint scripts in package.json |
 | 2 | JSONL persistence zonder file locking — race conditions bij multi-process |
-| 3 | Undocumented ai-maestro dependency (~/.aimaestro/{hosts,orchestra}) |
+| 3 | ~~Undocumented ai-maestro dependency~~ → renamed to ~/.ensemble |
 | 4 | execAsync met string interpolation — command injection risk in agent-runtime |
 | 5 | Shell script embeds variabelen in inline Python — ensemble-bridge.sh:33-89 |
 | 6 | Code duplicatie in cli/monitor.ts:100-133 (apiGet/apiPost + polling) |

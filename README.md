@@ -90,7 +90,7 @@ Copy `.env.example` to `.env` and adjust as needed. Key variables:
 |---|---|---|
 | `ENSEMBLE_PORT` | `23000` | Server port |
 | `ENSEMBLE_URL` | `http://localhost:23000` | CLI target URL |
-| `ENSEMBLE_DATA_DIR` | `~/.aimaestro` | Data directory |
+| `ENSEMBLE_DATA_DIR` | `~/.ensemble` | Data directory |
 | `ENSEMBLE_CORS_ORIGIN` | localhost only | Allowed CORS origins |
 
 See [full configuration docs](https://michelhelsdingen.github.io/ensemble/configuration) for all options including Telegram notifications, multi-host setup, and agent customization.

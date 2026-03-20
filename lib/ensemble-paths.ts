@@ -8,7 +8,7 @@ function trimConfiguredDir(value: string | undefined): string | undefined {
 
 export function getEnsembleDataDir(): string {
   return trimConfiguredDir(process.env.ENSEMBLE_DATA_DIR)
-    || path.join(os.homedir(), '.aimaestro')
+    || path.join(os.homedir(), '.ensemble')
 }
 
 export function getEnsembleRegistryDir(): string {
