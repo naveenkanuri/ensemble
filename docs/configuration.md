@@ -28,7 +28,7 @@ title: Configuration
 ORCHESTRA_PORT=23000
 ENSEMBLE_HOST_ID=macbook
 ENSEMBLE_TELEGRAM_BOT_TOKEN=123456:ABC-DEF
-ENSEMBLE_TELEGRAM_CHAT_ID=***REDACTED***
+ENSEMBLE_TELEGRAM_CHAT_ID=your-chat-id
 ```
 
 ---
@@ -181,7 +181,7 @@ Get notified when teams finish. Set up:
 
 ```bash
 export ENSEMBLE_TELEGRAM_BOT_TOKEN="123456:ABC-DEF..."
-export ENSEMBLE_TELEGRAM_CHAT_ID="***REDACTED***"
+export ENSEMBLE_TELEGRAM_CHAT_ID="your-chat-id"
 ```
 
 Notifications include: team name, duration, message count, and a brief summary.
