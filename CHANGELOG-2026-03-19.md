@@ -108,7 +108,7 @@ Bij team disband wordt automatisch een samenvatting naar Telegram gestuurd.
 **Testen**:
 ```bash
 # Handmatige test
-curl -s "https://api.telegram.org/bot***REDACTED***:AAEnd0GTwLhMXVacFFfLCaNniVh_JmdoB4U/sendMessage" \
+curl -s "https://api.telegram.org/bot***REDACTED***/sendMessage" \
   -d "chat_id=***REDACTED***" -d "text=Test ensemble notification"
 ```
 
