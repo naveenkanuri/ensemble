@@ -57,7 +57,7 @@ npx ensemble steer <team-id> "focus on the auth module"
 curl http://localhost:23000/api/v1/health
 
 # Create a team
-curl -X POST http://localhost:23000/api/orchestra/teams \
+curl -X POST http://localhost:23000/api/ensemble/teams \
   -H "Content-Type: application/json" \
   -d '{
     "name": "review-team",
@@ -69,10 +69,10 @@ curl -X POST http://localhost:23000/api/orchestra/teams \
   }'
 
 # List teams
-curl http://localhost:23000/api/orchestra/teams
+curl http://localhost:23000/api/ensemble/teams
 
 # Get team feed
-curl http://localhost:23000/api/orchestra/teams/<id>/feed
+curl http://localhost:23000/api/ensemble/teams/<id>/feed
 ```
 
 ## Architecture
@@ -81,26 +81,26 @@ curl http://localhost:23000/api/orchestra/teams/<id>/feed
 ensemble/
 ├── server.ts              # HTTP server (API entry point)
 ├── services/
-│   └── orchestra-service  # Team lifecycle & message routing
+│   └── ensemble-service  # Team lifecycle & message routing
 ├── lib/
 │   ├── agent-runtime      # AgentRuntime interface + TmuxRuntime
 │   ├── agent-spawner      # Local (tmux) & remote agent lifecycle
-│   ├── orchestra-registry # Team & message persistence (JSONL)
+│   ├── ensemble-registry # Team & message persistence (JSONL)
 │   └── hosts-config       # Multi-host configuration
 ├── types/
-│   └── orchestra          # TypeScript type definitions
+│   └── ensemble           # TypeScript type definitions
 ├── cli/
 │   ├── ensemble.ts        # CLI entrypoint
 │   └── monitor.ts         # TUI monitor (live team view)
 └── scripts/
-    └── orchestra-bridge   # Shell bridge for agent communication
+    └── ensemble-bridge    # Shell bridge for agent communication
 ```
 
 ## Configuration
 
 | Environment Variable | Default | Description |
 |---------------------|---------|-------------|
-| `ORCHESTRA_PORT` | `23000` | Server port |
+| `ENSEMBLE_PORT` | `23000` | Server port |
 | `ENSEMBLE_URL` | `http://localhost:23000` | CLI target URL |
 | `ENSEMBLE_DATA_DIR` | `~/.aimaestro` | Data directory for teams & messages |
 | `ENSEMBLE_HOST_ID` | `local` | Host identifier for agent spawning |

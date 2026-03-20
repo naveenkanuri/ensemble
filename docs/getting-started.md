@@ -84,7 +84,7 @@ curl http://localhost:23000/api/v1/health
 ### Option 1: Via API
 
 ```bash
-curl -X POST http://localhost:23000/api/orchestra/teams \
+curl -X POST http://localhost:23000/api/ensemble/teams \
   -H "Content-Type: application/json" \
   -d '{
     "name": "my-first-team",
@@ -134,7 +134,7 @@ tmux attach -t ensemble-abc-123
 1. **Server receives team request** — validates agents, creates team record
 2. **Agents spawn** — each gets a tmux session with the task prompt
 3. **Communication** — agents use `team-say`/`team-read` shell commands
-4. **Bridge** — the orchestra-bridge polls for new messages and delivers them
+4. **Bridge** — the ensemble-bridge polls for new messages and delivers them
 5. **Monitor** — TUI shows the conversation in real time
 6. **Auto-disband** — when agents signal completion, the team wraps up
 7. **Summary** — final results are persisted and optionally sent via Telegram

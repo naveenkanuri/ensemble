@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { OrchestraMessage, OrchestraTeam } from '../types/orchestra'
+import type { EnsembleMessage, EnsembleTeam } from '../types/ensemble'
 
-function makeMessage(overrides: Partial<OrchestraMessage> = {}): OrchestraMessage {
+function makeMessage(overrides: Partial<EnsembleMessage> = {}): EnsembleMessage {
   return {
     id: overrides.id ?? `msg-${Math.random().toString(36).slice(2, 8)}`,
     teamId: overrides.teamId ?? 'team-staged',
@@ -13,7 +13,7 @@ function makeMessage(overrides: Partial<OrchestraMessage> = {}): OrchestraMessag
   }
 }
 
-function makeTeam(): OrchestraTeam {
+function makeTeam(): EnsembleTeam {
   return {
     id: 'team-staged',
     name: 'team-staged',
@@ -45,8 +45,8 @@ describe('StagedWorkflowManager', () => {
     const appended: string[] = []
     let messageReadCount = 0
 
-    vi.doMock('../lib/orchestra-registry', () => ({
-      appendMessage: vi.fn((_teamId: string, message: OrchestraMessage) => appended.push(message.content)),
+    vi.doMock('../lib/ensemble-registry', () => ({
+      appendMessage: vi.fn((_teamId: string, message: EnsembleMessage) => appended.push(message.content)),
       getMessages: vi.fn((_teamId: string, _since?: string) => {
         messageReadCount += 1
         if (messageReadCount === 1) {

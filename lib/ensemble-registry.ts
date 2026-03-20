@@ -2,13 +2,13 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import { v4 as uuidv4 } from 'uuid'
-import type { OrchestraTeam, OrchestraMessage, CreateTeamRequest } from '../types/orchestra'
-import { getOrchestraDataDir } from './ensemble-paths'
+import type { EnsembleTeam, EnsembleMessage, CreateTeamRequest } from '../types/ensemble'
+import { getEnsembleRegistryDir } from './ensemble-paths'
 import { collabMessagesFile } from './collab-paths'
 
-const ORCHESTRA_DIR = getOrchestraDataDir()
-const TEAMS_FILE = path.join(ORCHESTRA_DIR, 'teams.json')
-const MESSAGES_DIR = path.join(ORCHESTRA_DIR, 'messages')
+const ENSEMBLE_DIR = getEnsembleRegistryDir()
+const TEAMS_FILE = path.join(ENSEMBLE_DIR, 'teams.json')
+const MESSAGES_DIR = path.join(ENSEMBLE_DIR, 'messages')
 const TEAMS_LOCK_DIR = `${TEAMS_FILE}.lock`
 const LOCK_STALE_MS = 10_000
 const LOCK_TIMEOUT_MS = 5_000
@@ -28,19 +28,19 @@ function sleepSync(ms: number): void {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 }
 
-function readTeamsFile(): OrchestraTeam[] {
-  ensureDir(ORCHESTRA_DIR)
+function readTeamsFile(): EnsembleTeam[] {
+  ensureDir(ENSEMBLE_DIR)
   if (!fs.existsSync(TEAMS_FILE)) return []
   return JSON.parse(fs.readFileSync(TEAMS_FILE, 'utf-8'))
 }
 
-function writeTeamsFile(teams: OrchestraTeam[]): void {
-  ensureDir(ORCHESTRA_DIR)
+function writeTeamsFile(teams: EnsembleTeam[]): void {
+  ensureDir(ENSEMBLE_DIR)
   fs.writeFileSync(TEAMS_FILE, JSON.stringify(teams, null, 2))
 }
 
 function acquireTeamsLock(): () => void {
-  ensureDir(ORCHESTRA_DIR)
+  ensureDir(ENSEMBLE_DIR)
   const startedAt = Date.now()
 
   while (true) {
@@ -81,24 +81,24 @@ function withTeamsLock<T>(fn: () => T): T {
   }
 }
 
-export function loadTeams(): OrchestraTeam[] {
+export function loadTeams(): EnsembleTeam[] {
   return withTeamsLock(() => readTeamsFile())
 }
 
-export function saveTeams(teams: OrchestraTeam[]): void {
+export function saveTeams(teams: EnsembleTeam[]): void {
   withTeamsLock(() => {
     writeTeamsFile(teams)
   })
 }
 
-export function getTeam(id: string): OrchestraTeam | undefined {
+export function getTeam(id: string): EnsembleTeam | undefined {
   return loadTeams().find(t => t.id === id)
 }
 
-export function createTeam(request: CreateTeamRequest): OrchestraTeam {
+export function createTeam(request: CreateTeamRequest): EnsembleTeam {
   return withTeamsLock(() => {
     const teams = readTeamsFile()
-    const team: OrchestraTeam = {
+    const team: EnsembleTeam = {
       id: uuidv4(),
       name: request.name,
       description: request.description,
@@ -121,7 +121,7 @@ export function createTeam(request: CreateTeamRequest): OrchestraTeam {
   })
 }
 
-export function updateTeam(id: string, updates: Partial<OrchestraTeam>): OrchestraTeam | undefined {
+export function updateTeam(id: string, updates: Partial<EnsembleTeam>): EnsembleTeam | undefined {
   return withTeamsLock(() => {
     const teams = readTeamsFile()
     const idx = teams.findIndex(t => t.id === id)
@@ -132,27 +132,27 @@ export function updateTeam(id: string, updates: Partial<OrchestraTeam>): Orchest
   })
 }
 
-export function appendMessage(teamId: string, message: OrchestraMessage): void {
+export function appendMessage(teamId: string, message: EnsembleMessage): void {
   const dir = path.join(MESSAGES_DIR, teamId)
   ensureDir(dir)
   const file = path.join(dir, 'feed.jsonl')
   fs.appendFileSync(file, JSON.stringify(message) + '\n')
 }
 
-export function getMessages(teamId: string, since?: string): OrchestraMessage[] {
+export function getMessages(teamId: string, since?: string): EnsembleMessage[] {
   const sources = [
     path.join(MESSAGES_DIR, teamId, 'feed.jsonl'),
     collabMessagesFile(teamId),
   ]
 
   const seenIds = new Set<string>()
-  let messages: OrchestraMessage[] = []
+  let messages: EnsembleMessage[] = []
 
   for (const file of sources) {
     if (!fs.existsSync(file)) continue
     const lines = fs.readFileSync(file, 'utf-8').trim().split('\n').filter(Boolean)
     for (const line of lines) {
-      const msg = JSON.parse(line) as OrchestraMessage
+      const msg = JSON.parse(line) as EnsembleMessage
       const dedupeKey = msg.id || `${msg.from}:${msg.timestamp}:${msg.content?.slice(0, 50)}`
       if (!seenIds.has(dedupeKey)) {
         seenIds.add(dedupeKey)

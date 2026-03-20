@@ -14,10 +14,10 @@ Grote infrastructuur-overhaul van het ensemble multi-agent collaboration systeem
 
 **Probleem**: Alle tmp-bestanden lagen los in `/tmp/` met hardcoded namen. Twee collabs tegelijk → file conflicts.
 
-**Oplossing**: Alle runtime files nu onder `/tmp/orchestra/<teamId>/`:
+**Oplossing**: Alle runtime files nu onder `/tmp/ensemble/<teamId>/`:
 
 ```
-/tmp/orchestra/<teamId>/
+/tmp/ensemble/<teamId>/
   messages.jsonl      # agent berichten
   summary.txt         # disband samenvatting
   bridge.pid/log      # bridge process
@@ -34,14 +34,14 @@ Grote infrastructuur-overhaul van het ensemble multi-agent collaboration systeem
 ```bash
 # Pad functies werken correct
 node -e "import('./lib/collab-paths.ts').then(m => console.log(m.collabRuntimeDir('test-123')))"
-# → /tmp/orchestra/test-123
+# → /tmp/ensemble/test-123
 ```
 
 ### A2. Bridge Hardening
 
 **Probleem**: Bridge had geen health check, geen retry, geen single-instance guard. Bij API down liep hij eindeloos.
 
-**Oplossing** (`scripts/orchestra-bridge.sh`):
+**Oplossing** (`scripts/ensemble-bridge.sh`):
 - **Single-instance guard**: PID file + `kill -0` check. Tweede bridge voor zelfde team → exit.
 - **Health check**: Bij start curl naar `/api/v1/health`. Geen response → exit.
 - **Exponential backoff**: 10 retries per bericht, 0.5s→30s delay.
@@ -51,8 +51,8 @@ node -e "import('./lib/collab-paths.ts').then(m => console.log(m.collabRuntimeDi
 **Testen**:
 ```bash
 # Start bridge voor een team, probeer tweede → "Already running"
-scripts/orchestra-bridge.sh test-id http://localhost:23000 &
-scripts/orchestra-bridge.sh test-id http://localhost:23000
+scripts/ensemble-bridge.sh test-id http://localhost:23000 &
+scripts/ensemble-bridge.sh test-id http://localhost:23000
 # → [bridge] Already running for test-id (pid XXXXX)
 ```
 
@@ -69,8 +69,8 @@ for i in $(seq 1 10); do
   /usr/local/bin/team-say test-atomic agent-$i team "message $i" &
 done
 wait
-wc -l /tmp/orchestra/test-atomic/messages.jsonl  # → 10
-python3 -c "import json; [json.loads(l) for l in open('/tmp/orchestra/test-atomic/messages.jsonl')]"  # geen errors
+wc -l /tmp/ensemble/test-atomic/messages.jsonl  # → 10
+python3 -c "import json; [json.loads(l) for l in open('/tmp/ensemble/test-atomic/messages.jsonl')]"  # geen errors
 ```
 
 ### A4. Auto-Accept Permissions
@@ -138,7 +138,7 @@ Bij disband wordt de token usage per agent gescrapet uit hun tmux pane.
 **Testen**:
 ```bash
 # Na een collab, check de summary:
-cat /tmp/orchestra/<teamId>/summary.txt
+cat /tmp/ensemble/<teamId>/summary.txt
 # → Bevat token usage per agent
 
 # Check Telegram bericht → bevat ook tokens
@@ -158,12 +158,12 @@ cat /tmp/orchestra/<teamId>/summary.txt
 **Testen**:
 ```bash
 # Via API met templateName
-curl -X POST http://localhost:23000/api/orchestra/teams \
+curl -X POST http://localhost:23000/api/ensemble/teams \
   -H "Content-Type: application/json" \
   -d '{"name":"test","description":"Review my code","templateName":"review","agents":[{"program":"codex","role":"lead"},{"program":"claude code","role":"worker"}]}'
 
 # Unit tests
-npx vitest run tests/orchestra.test.ts -t "template"
+npx vitest run tests/ensemble.test.ts -t "template"
 ```
 
 ### B5. Git Worktree Isolation (Round 5)
@@ -171,8 +171,8 @@ npx vitest run tests/orchestra.test.ts -t "template"
 Elke agent krijgt een eigen git worktree + branch. Voorkomt file conflicts bij parallel schrijven.
 
 **Flow**:
-1. `createOrchestraTeam()` met `useWorktrees: true`
-2. Per local agent: `git worktree add /tmp/orchestra/<teamId>/worktrees/<agent> -b collab/<teamId>/<agent>`
+1. `createEnsembleTeam()` met `useWorktrees: true`
+2. Per local agent: `git worktree add /tmp/ensemble/<teamId>/worktrees/<agent> -b collab/<teamId>/<agent>`
 3. Agent werkt in eigen directory
 4. Bij disband: merge branches terug → cleanup worktrees → kill sessions
 
@@ -181,7 +181,7 @@ Elke agent krijgt een eigen git worktree + branch. Voorkomt file conflicts bij p
 **Testen**:
 ```bash
 # Unit tests
-npx vitest run tests/orchestra.test.ts -t "worktree"
+npx vitest run tests/ensemble.test.ts -t "worktree"
 
 # Handmatig: na collab met useWorktrees=true
 git worktree list  # → toont agent worktrees
@@ -202,13 +202,13 @@ git branch -a      # → toont collab/* branches
 **Testen**:
 ```bash
 # Via API met staged: true
-curl -X POST http://localhost:23000/api/orchestra/teams \
+curl -X POST http://localhost:23000/api/ensemble/teams \
   -H "Content-Type: application/json" \
   -d '{"name":"staged-test","description":"Build X","staged":true,"agents":[...]}'
 
 # Unit tests
 npx vitest run tests/staged-workflow.test.ts
-npx vitest run tests/orchestra.test.ts -t "staged"
+npx vitest run tests/ensemble.test.ts -t "staged"
 ```
 
 ### B7. Session Replay (Round 7)
@@ -301,15 +301,15 @@ Speelt sessie af met echte timing, ANSI kleuren, timestamps.
 cd ~/Documents/ensemble && npx vitest run
 
 # Per test file
-npx vitest run tests/orchestra.test.ts      # 50 tests
+npx vitest run tests/ensemble.test.ts      # 50 tests
 npx vitest run tests/staged-workflow.test.ts # 1 test
 npx vitest run tests/agent-watchdog.test.ts  # 5 tests
 
 # Specifieke test groep
-npx vitest run tests/orchestra.test.ts -t "template"
-npx vitest run tests/orchestra.test.ts -t "worktree"
-npx vitest run tests/orchestra.test.ts -t "staged"
-npx vitest run tests/orchestra.test.ts -t "shouldAutoDisband"
+npx vitest run tests/ensemble.test.ts -t "template"
+npx vitest run tests/ensemble.test.ts -t "worktree"
+npx vitest run tests/ensemble.test.ts -t "staged"
+npx vitest run tests/ensemble.test.ts -t "shouldAutoDisband"
 
 # TypeScript check
 npx tsc --noEmit
@@ -334,7 +334,7 @@ scripts/collab-launch.sh "$(pwd)" "Test alle nieuwe features"
 tmux attach -t ensemble-<teamId>
 
 # 4. Na afloop: check Telegram (notificatie ontvangen?)
-# 5. Check summary: cat /tmp/orchestra/<teamId>/summary.txt (token usage?)
+# 5. Check summary: cat /tmp/ensemble/<teamId>/summary.txt (token usage?)
 # 6. Replay: bash scripts/collab-replay.sh <teamId> --speed 0
 # 7. Status: bash scripts/collab-status.sh --once
 # 8. Cleanup: bash scripts/collab-cleanup.sh
@@ -355,11 +355,11 @@ ensemble/
 │   ├── agent-watchdog.ts        # Stall detection + auto-nudge
 │   ├── staged-workflow.ts       # Plan→Exec→Verify phases
 │   ├── worktree-manager.ts      # Git worktree create/merge/destroy
-│   ├── orchestra-registry.ts    # Team/message persistence
+│   ├── ensemble-registry.ts    # Team/message persistence
 │   ├── agent-runtime.ts         # tmux abstraction
 │   └── agent-config.ts          # agents.json loader
 ├── services/
-│   └── orchestra-service.ts     # Core orchestration logic
+│   └── ensemble-service.ts     # Core orchestration logic
 ├── scripts/
 │   ├── collab-paths.sh          # Shared path resolver (shell)
 │   ├── collab-launch.sh         # All-in-one team launcher
@@ -367,13 +367,13 @@ ensemble/
 │   ├── collab-replay.sh         # Session replay
 │   ├── collab-status.sh         # Dashboard
 │   ├── collab-cleanup.sh        # Prune old dirs
-│   ├── orchestra-bridge.sh      # JSONL→API bridge
+│   ├── ensemble-bridge.sh      # JSONL→API bridge
 │   ├── team-say.sh              # Atomic message write
 │   └── team-read.sh             # Read team feed
 ├── types/
-│   └── orchestra.ts             # TypeScript types
+│   └── ensemble.ts             # TypeScript types
 └── tests/
-    ├── orchestra.test.ts        # 50 tests
+    ├── ensemble.test.ts        # 50 tests
     ├── staged-workflow.test.ts  # 1 test
     └── agent-watchdog.test.ts   # 5 tests
 ```

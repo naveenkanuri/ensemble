@@ -58,7 +58,7 @@ function apiPost(urlPath: string, body: unknown): Promise<unknown> {
 async function cmdStatus() {
   try {
     const health = await apiGet<{ status: string; version: string }>('/api/v1/health')
-    const teams = await apiGet<{ teams: Array<{ status: string }> }>('/api/orchestra/teams')
+    const teams = await apiGet<{ teams: Array<{ status: string }> }>('/api/ensemble/teams')
     const active = teams.teams.filter(t => t.status === 'active')
 
     console.log()
@@ -84,7 +84,7 @@ interface TeamListItem {
 
 async function cmdTeams() {
   try {
-    const data = await apiGet<{ teams: TeamListItem[] }>('/api/orchestra/teams')
+    const data = await apiGet<{ teams: TeamListItem[] }>('/api/ensemble/teams')
 
     if (data.teams.length === 0) {
       console.log(`\n  ${c.yellow}No teams found.${c.r}\n`)
@@ -125,7 +125,7 @@ async function cmdTeams() {
 
 async function cmdSteer(teamId: string, message: string) {
   try {
-    await apiPost(`/api/orchestra/teams/${teamId}`, {
+    await apiPost(`/api/ensemble/teams/${teamId}`, {
       from: 'user',
       to: 'team',
       content: message,

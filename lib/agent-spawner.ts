@@ -1,5 +1,5 @@
 /**
- * Agent Spawner — Standalone agent lifecycle management for Orchestra
+ * Agent Spawner — Standalone agent lifecycle management for Ensemble
  * Replaces ai-maestro's agent-registry + agents-core-service with a minimal implementation.
  * Handles: tmux session creation, program launching, and session cleanup.
  */

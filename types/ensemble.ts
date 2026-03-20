@@ -1,17 +1,17 @@
-export interface OrchestraTeam {
+export interface EnsembleTeam {
   id: string
   name: string
   description: string
   status: 'forming' | 'active' | 'paused' | 'completed' | 'disbanded' | 'failed'
-  agents: OrchestraTeamAgent[]
+  agents: EnsembleTeamAgent[]
   createdBy: string
   createdAt: string
   completedAt?: string
   feedMode: 'silent' | 'summary' | 'live'
-  result?: OrchestraTeamResult
+  result?: EnsembleTeamResult
 }
 
-export interface OrchestraTeamAgent {
+export interface EnsembleTeamAgent {
   agentId: string
   name: string
   program: string
@@ -22,7 +22,7 @@ export interface OrchestraTeamAgent {
   worktreeBranch?: string
 }
 
-export interface OrchestraTeamResult {
+export interface EnsembleTeamResult {
   summary: string
   decisions: string[]
   discoveries: string[]
@@ -30,7 +30,7 @@ export interface OrchestraTeamResult {
   duration: number
 }
 
-export interface OrchestraMessage {
+export interface EnsembleMessage {
   id: string
   teamId: string
   from: string

@@ -4,7 +4,7 @@ title: API Reference
 
 # API Reference
 
-Base URL: `http://localhost:23000` (configurable via `ORCHESTRA_PORT`)
+Base URL: `http://localhost:23000` (configurable via `ENSEMBLE_PORT`)
 
 Rate limit: 100 requests per 60 seconds per IP.
 
@@ -26,10 +26,10 @@ curl http://localhost:23000/api/v1/health
 
 ## Teams
 
-### `POST /api/orchestra/teams` — Create team
+### `POST /api/ensemble/teams` — Create team
 
 ```bash
-curl -X POST http://localhost:23000/api/orchestra/teams \
+curl -X POST http://localhost:23000/api/ensemble/teams \
   -H "Content-Type: application/json" \
   -d '{
     "name": "review-team",
@@ -59,36 +59,36 @@ curl -X POST http://localhost:23000/api/orchestra/teams \
 - `staged` (boolean) — enable staged plan/execute/verify workflow
 - `stagedConfig` (object) — phase timeouts and settings
 
-**Response:** `{ "team": OrchestraTeam }`
+**Response:** `{ "team": EnsembleTeam }`
 
 Returns `400` for malformed JSON, `429` for rate limit exceeded.
 
 ---
 
-### `GET /api/orchestra/teams` — List teams
+### `GET /api/ensemble/teams` — List teams
 
 ```bash
-curl http://localhost:23000/api/orchestra/teams
+curl http://localhost:23000/api/ensemble/teams
 ```
 
-**Response:** `{ "teams": OrchestraTeam[] }`
+**Response:** `{ "teams": EnsembleTeam[] }`
 
 ---
 
-### `GET /api/orchestra/teams/:id` — Get team details
+### `GET /api/ensemble/teams/:id` — Get team details
 
 ```bash
-curl http://localhost:23000/api/orchestra/teams/abc-123
+curl http://localhost:23000/api/ensemble/teams/abc-123
 ```
 
-**Response:** `{ "team": OrchestraTeam, "messages": OrchestraMessage[] }`
+**Response:** `{ "team": EnsembleTeam, "messages": EnsembleMessage[] }`
 
 ---
 
-### `POST /api/orchestra/teams/:id` — Send message
+### `POST /api/ensemble/teams/:id` — Send message
 
 ```bash
-curl -X POST http://localhost:23000/api/orchestra/teams/abc-123 \
+curl -X POST http://localhost:23000/api/ensemble/teams/abc-123 \
   -H "Content-Type: application/json" \
   -d '{
     "from": "user",
@@ -106,34 +106,34 @@ Returns `400` for malformed JSON.
 
 ---
 
-### `DELETE /api/orchestra/teams/:id` — Disband team
+### `DELETE /api/ensemble/teams/:id` — Disband team
 
 ```bash
-curl -X DELETE http://localhost:23000/api/orchestra/teams/abc-123
+curl -X DELETE http://localhost:23000/api/ensemble/teams/abc-123
 ```
 
-Stops all agents, generates summary, cleans up. Also available as `POST /api/orchestra/teams/:id/disband`.
+Stops all agents, generates summary, cleans up. Also available as `POST /api/ensemble/teams/:id/disband`.
 
-**Response:** `{ "team": OrchestraTeam }`
+**Response:** `{ "team": EnsembleTeam }`
 
 ---
 
 ## Feed
 
-### `GET /api/orchestra/teams/:id/feed` — Message feed
+### `GET /api/ensemble/teams/:id/feed` — Message feed
 
 ```bash
 # All messages
-curl http://localhost:23000/api/orchestra/teams/abc-123/feed
+curl http://localhost:23000/api/ensemble/teams/abc-123/feed
 
 # Incremental (since timestamp)
-curl "http://localhost:23000/api/orchestra/teams/abc-123/feed?since=2026-03-20T10:00:00Z"
+curl "http://localhost:23000/api/ensemble/teams/abc-123/feed?since=2026-03-20T10:00:00Z"
 ```
 
 **Query params:**
 - `since` (ISO 8601 timestamp) — only return messages after this time
 
-**Response:** `{ "messages": OrchestraMessage[] }`
+**Response:** `{ "messages": EnsembleMessage[] }`
 
 Use the `since` parameter for efficient polling — avoids re-fetching the entire message history.
 
@@ -141,7 +141,7 @@ Use the `since` parameter for efficient polling — avoids re-fetching the entir
 
 ## Types
 
-### OrchestraTeam
+### EnsembleTeam
 
 ```typescript
 {
@@ -149,7 +149,7 @@ Use the `since` parameter for efficient polling — avoids re-fetching the entir
   name: string
   description: string
   status: 'forming' | 'active' | 'paused' | 'completed' | 'disbanded' | 'failed'
-  agents: OrchestraTeamAgent[]
+  agents: EnsembleTeamAgent[]
   createdBy: string
   createdAt: string // ISO 8601
   feedMode: 'live' | 'batch'
@@ -158,7 +158,7 @@ Use the `since` parameter for efficient polling — avoids re-fetching the entir
 }
 ```
 
-### OrchestraTeamAgent
+### EnsembleTeamAgent
 
 ```typescript
 {
@@ -171,7 +171,7 @@ Use the `since` parameter for efficient polling — avoids re-fetching the entir
 }
 ```
 
-### OrchestraMessage
+### EnsembleMessage
 
 ```typescript
 {

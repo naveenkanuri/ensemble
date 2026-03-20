@@ -13,7 +13,7 @@ title: Architecture
                     └──────┬──────┘
                            │
                     ┌──────▼──────┐
-                    │  Orchestra  │
+                    │  Ensemble   │
                     │   Service   │
                     └──┬───┬───┬──┘
                        │   │   │
@@ -42,21 +42,21 @@ ensemble/
 │   ├── ensemble.ts            # CLI entry point
 │   └── monitor.ts             # TUI monitor (blessed-based)
 ├── services/
-│   └── orchestra-service.ts   # Team lifecycle, messaging, auto-disband
+│   └── ensemble-service.ts   # Team lifecycle, messaging, auto-disband
 ├── lib/
 │   ├── agent-config.ts        # agents.json loader + program resolver
 │   ├── agent-runtime.ts       # AgentRuntime interface + TmuxRuntime
 │   ├── agent-spawner.ts       # Local/remote agent spawn lifecycle
 │   ├── agent-watchdog.ts      # Idle detection + nudge mechanism
-│   ├── collab-paths.ts        # /tmp/orchestra/* path resolver
+│   ├── collab-paths.ts        # /tmp/ensemble/* path resolver
 │   ├── ensemble-paths.ts      # Data directory paths
 │   ├── hosts-config.ts        # Multi-host discovery + lookup
-│   ├── orchestra-registry.ts  # JSONL persistence (with file locking)
+│   ├── ensemble-registry.ts  # JSONL persistence (with file locking)
 │   ├── staged-workflow.ts     # Multi-phase workflows
 │   └── worktree-manager.ts    # Git worktree isolation
 ├── types/
 │   ├── agent-program.ts       # AgentProgram interface
-│   └── orchestra.ts           # Team, Message, Agent types
+│   └── ensemble.ts            # Team, Message, Agent types
 ├── scripts/
 │   ├── collab-launch.sh       # All-in-one team launcher
 │   ├── collab-poll.sh         # Single-shot message poller
@@ -66,17 +66,17 @@ ensemble/
 │   ├── collab-cleanup.sh      # Temp file cleanup
 │   ├── team-say.sh            # Agent message send
 │   ├── team-read.sh           # Agent message read
-│   ├── orchestra-bridge.sh    # File→HTTP message bridge
+│   ├── ensemble-bridge.sh    # File→HTTP message bridge
 │   ├── parse-messages.py      # Shared JSONL parser
 │   └── collab-paths.sh        # Shared path functions
 └── tests/
-    ├── orchestra.test.ts      # Integration tests
+    ├── ensemble.test.ts      # Integration tests
     └── agent-watchdog.test.ts # Watchdog unit tests
 ```
 
 ## Key components
 
-### Orchestra Service
+### Ensemble Service
 
 The brain. Manages team lifecycle:
 
@@ -85,7 +85,7 @@ The brain. Manages team lifecycle:
 - **Auto-disband** — Detect completion signals, idle teams, failed agents
 - **Disband** — Stop agents, merge worktrees, write summary, send notifications
 
-### Orchestra Registry
+### Ensemble Registry
 
 Persistence layer using JSONL flat files. File locking prevents corruption from concurrent access. Stores:
 
@@ -111,7 +111,7 @@ Monitors agent activity and prevents stalls:
 - **Stall detection** — After 180s, marks agent as stalled
 - Configurable via `ENSEMBLE_WATCHDOG_NUDGE_MS` and `ENSEMBLE_WATCHDOG_STALL_MS`
 
-### Orchestra Bridge
+### Ensemble Bridge
 
 Shell process that bridges the gap between file-based agent communication (`team-say.sh` writes to JSONL) and the HTTP API:
 
@@ -130,13 +130,13 @@ Agent writes message
 team-say.sh → messages.jsonl (atomic write with flock)
        │
        ▼
-orchestra-bridge.sh polls file
+ensemble-bridge.sh polls file
        │
        ▼
-POST /api/orchestra/teams/:id (HTTP)
+POST /api/ensemble/teams/:id (HTTP)
        │
        ▼
-orchestra-service routes message
+ensemble-service routes message
        │
        ▼
 Delivers to target agent's tmux session
@@ -147,7 +147,7 @@ Agent reads via team-read.sh (polls HTTP API)
 
 ## Runtime files
 
-All runtime data lives in `/tmp/orchestra/<team-id>/`:
+All runtime data lives in `/tmp/ensemble/<team-id>/`:
 
 | File | Purpose |
 |---|---|

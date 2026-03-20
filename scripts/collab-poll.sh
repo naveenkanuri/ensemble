@@ -2,7 +2,7 @@
 # collab-poll.sh — Single-shot message poll with clean output
 # Usage: collab-poll.sh <team-id> [--sleep N]
 # Returns new messages since last poll, formatted cleanly.
-# Tracks SEEN state in /tmp/orchestra/<TEAM_ID>/.poll-seen
+# Tracks SEEN state in /tmp/ensemble/<TEAM_ID>/.poll-seen
 #
 # Output: tab-separated "sender\tcontent" lines, ending with one of:
 #   ---STATUS:ACTIVE   new messages found
@@ -44,7 +44,7 @@ done
 JSONL="$(collab_messages_file "$TEAM_ID")"
 FINISHED="$(collab_finished_marker "$TEAM_ID")"
 SUMMARY="$(collab_summary_file "$TEAM_ID")"
-SEEN_FILE="/tmp/orchestra/$TEAM_ID/.poll-seen"
+SEEN_FILE="/tmp/ensemble/$TEAM_ID/.poll-seen"
 
 # Read previous SEEN count (with numeric guard)
 SEEN=0

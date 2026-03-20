@@ -20,7 +20,7 @@
 | 2 | JSONL persistence zonder file locking — race conditions bij multi-process |
 | 3 | Undocumented ai-maestro dependency (~/.aimaestro/{hosts,orchestra}) |
 | 4 | execAsync met string interpolation — command injection risk in agent-runtime |
-| 5 | Shell script embeds variabelen in inline Python — orchestra-bridge.sh:33-89 |
+| 5 | Shell script embeds variabelen in inline Python — ensemble-bridge.sh:33-89 |
 | 6 | Code duplicatie in cli/monitor.ts:100-133 (apiGet/apiPost + polling) |
 | 7 | Geen CONTRIBUTING.md |
 | 8 | Geen .gitignore voor generated/temp files |

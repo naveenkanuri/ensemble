@@ -12,7 +12,7 @@ usage() {
 Usage: collab-replay.sh <team-id> [--speed N] [--verbose]
 
   --speed N    Playback speed multiplier (default: 1, 0 = instant)
-  --verbose    Show orchestra system messages if present
+  --verbose    Show ensemble system messages if present
   -h, --help   Show this help
 EOF
 }
@@ -115,7 +115,7 @@ def parse_timestamp(value):
 
 events = []
 total_messages = 0
-skipped_orchestra = 0
+skipped_ensemble = 0
 agent_counter = Counter()
 first_dt = None
 last_dt = None
@@ -143,8 +143,8 @@ with open(jsonl_path, "r", encoding="utf-8") as handle:
             if last_dt is None or dt > last_dt:
                 last_dt = dt
 
-        if sender == "orchestra" and not verbose:
-            skipped_orchestra += 1
+        if sender == "ensemble" and not verbose:
+            skipped_ensemble += 1
             continue
 
         if dt is None:
@@ -187,7 +187,7 @@ with open(meta_path, "w", encoding="utf-8") as handle:
     handle.write("team_id={0}\n".format(team_id))
     handle.write("total_messages={0}\n".format(total_messages))
     handle.write("rendered_messages={0}\n".format(len(events)))
-    handle.write("skipped_orchestra={0}\n".format(skipped_orchestra))
+    handle.write("skipped_ensemble={0}\n".format(skipped_ensemble))
     handle.write("duration_seconds={0:.3f}\n".format(duration_seconds))
     handle.write("started_at={0}\n".format(first_dt.astimezone().strftime("%Y-%m-%d %H:%M:%S %Z") if first_dt else "unknown"))
     handle.write("ended_at={0}\n".format(last_dt.astimezone().strftime("%Y-%m-%d %H:%M:%S %Z") if last_dt else "unknown"))
@@ -196,7 +196,7 @@ PY
 
 TOTAL_MESSAGES="0"
 RENDERED_MESSAGES="0"
-SKIPPED_ORCHESTRA="0"
+SKIPPED_ENSEMBLE="0"
 DURATION_SECONDS="0"
 STARTED_AT="unknown"
 ENDED_AT="unknown"
@@ -206,7 +206,7 @@ while IFS='=' read -r key value; do
   case "$key" in
     total_messages) TOTAL_MESSAGES="$value" ;;
     rendered_messages) RENDERED_MESSAGES="$value" ;;
-    skipped_orchestra) SKIPPED_ORCHESTRA="$value" ;;
+    skipped_ensemble) SKIPPED_ENSEMBLE="$value" ;;
     duration_seconds) DURATION_SECONDS="$value" ;;
     started_at) STARTED_AT="$value" ;;
     ended_at) ENDED_AT="$value" ;;
@@ -262,7 +262,7 @@ PY
     case "$sender" in
       codex-1)  color="$C1" ;;
       claude-2) color="$C2" ;;
-      orchestra) color="$W" ;;
+      ensemble) color="$W" ;;
       *)        color="$W" ;;
     esac
 
@@ -282,5 +282,5 @@ echo -e "  ${D}─────────────────────�
 echo -e "  ${BD}${G}◈ Replay complete${R}"
 echo -e "  ${W}Visible${R} ${D}│${R} ${RENDERED_MESSAGES} messages"
 echo -e "  ${W}Total${R}   ${D}│${R} ${TOTAL_MESSAGES} messages"
-echo -e "  ${W}Hidden${R}  ${D}│${R} ${SKIPPED_ORCHESTRA} orchestra"
+echo -e "  ${W}Hidden${R}  ${D}│${R} ${SKIPPED_ENSEMBLE} ensemble"
 echo -e "  ${W}Span${R}    ${D}│${R} ${DURATION_SECONDS} seconds"

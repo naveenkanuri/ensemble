@@ -1,15 +1,15 @@
 /**
- * Orchestra Server — Standalone HTTP server
+ * Ensemble Server — Standalone HTTP server
  * Lightweight replacement for Next.js API routes.
  */
 
 import http from 'http'
 import {
-  createOrchestraTeam, getOrchestraTeam, listOrchestraTeams,
+  createEnsembleTeam, getEnsembleTeam, listEnsembleTeams,
   getTeamFeed, sendTeamMessage, disbandTeam,
-} from './services/orchestra-service'
+} from './services/ensemble-service'
 
-const PORT = parseInt(process.env.ORCHESTRA_PORT || '23000', 10)
+const PORT = parseInt(process.env.ENSEMBLE_PORT || process.env.ORCHESTRA_PORT || '23000', 10)
 const HOST = '127.0.0.1'
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX_REQUESTS = 100
@@ -132,9 +132,9 @@ const server = http.createServer(async (req, res) => {
     }
 
     // List teams / Create team
-    if (path === '/api/orchestra/teams') {
+    if (path === '/api/ensemble/teams') {
       if (method === 'GET') {
-        const result = listOrchestraTeams()
+        const result = listEnsembleTeams()
         return json(res, result.data, result.status, origin)
       }
       if (method === 'POST') {
@@ -144,18 +144,18 @@ const server = http.createServer(async (req, res) => {
         } catch {
           return json(res, { error: 'Bad Request: malformed JSON' }, 400, origin)
         }
-        const result = await createOrchestraTeam(body as Parameters<typeof createOrchestraTeam>[0])
+        const result = await createEnsembleTeam(body as Parameters<typeof createEnsembleTeam>[0])
         if (result.error) return json(res, { error: result.error }, result.status, origin)
         return json(res, result.data, result.status, origin)
       }
     }
 
-    // Team operations: /api/orchestra/teams/:id
-    const teamMatch = path.match(/^\/api\/orchestra\/teams\/([^/]+)$/)
+    // Team operations: /api/ensemble/teams/:id
+    const teamMatch = path.match(/^\/api\/ensemble\/teams\/([^/]+)$/)
     if (teamMatch) {
       const teamId = teamMatch[1]
       if (method === 'GET') {
-        const result = getOrchestraTeam(teamId)
+        const result = getEnsembleTeam(teamId)
         if (result.error) return json(res, { error: result.error }, result.status, origin)
         return json(res, result.data, result.status, origin)
       }
@@ -177,16 +177,16 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // Disband: /api/orchestra/teams/:id/disband
-    const disbandMatch = path.match(/^\/api\/orchestra\/teams\/([^/]+)\/disband$/)
+    // Disband: /api/ensemble/teams/:id/disband
+    const disbandMatch = path.match(/^\/api\/ensemble\/teams\/([^/]+)\/disband$/)
     if (disbandMatch && method === 'POST') {
       const result = await disbandTeam(disbandMatch[1])
       if (result.error) return json(res, { error: result.error }, result.status, origin)
       return json(res, result.data, result.status, origin)
     }
 
-    // Feed: /api/orchestra/teams/:id/feed
-    const feedMatch = path.match(/^\/api\/orchestra\/teams\/([^/]+)\/feed$/)
+    // Feed: /api/ensemble/teams/:id/feed
+    const feedMatch = path.match(/^\/api\/ensemble\/teams\/([^/]+)\/feed$/)
     if (feedMatch && method === 'GET') {
       const since = url.searchParams.get('since') || undefined
       const result = getTeamFeed(feedMatch[1], since)
@@ -202,6 +202,6 @@ const server = http.createServer(async (req, res) => {
 })
 
 server.listen(PORT, HOST, () => {
-  console.log(`[Orchestra] Server running on http://${HOST}:${PORT}`)
-  console.log(`[Orchestra] Health: http://localhost:${PORT}/api/v1/health`)
+  console.log(`[Ensemble] Server running on http://${HOST}:${PORT}`)
+  console.log(`[Ensemble] Health: http://localhost:${PORT}/api/v1/health`)
 })

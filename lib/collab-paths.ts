@@ -1,13 +1,13 @@
 /**
  * Collab Path Resolver — Shared path contract for multi-collab isolation.
- * All runtime files live under /tmp/orchestra/<teamId>/.
+ * All runtime files live under /tmp/ensemble/<teamId>/.
  * Shell equivalent: scripts/collab-paths.sh (must stay in sync).
  */
 
 import path from 'path'
 import fs from 'fs'
 
-const RUNTIME_ROOT = '/tmp/orchestra'
+const RUNTIME_ROOT = '/tmp/ensemble'
 
 /** Base runtime directory for a team */
 export function collabRuntimeDir(teamId: string): string {

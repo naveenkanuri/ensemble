@@ -1,5 +1,5 @@
 /**
- * Host Configuration — Stripped for Orchestra standalone
+ * Host Configuration — Stripped for Ensemble standalone
  * Only identity + discovery functions, no CRUD/org management
  */
 

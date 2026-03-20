@@ -78,7 +78,7 @@ interface AgentStyle {
 }
 
 const agentStyles: Record<string, AgentStyle> = {
-  orchestra: { badge: `${color.bgGray}${color.brightWhite}`, text: color.gray, icon: '⚙' },
+  ensemble: { badge: `${color.bgGray}${color.brightWhite}`, text: color.gray, icon: '⚙' },
   user: { badge: `${color.bgCyan}${color.black}`, text: color.brightCyan, icon: '▸' },
 }
 
@@ -91,7 +91,7 @@ const programColorStyles: Record<string, Omit<AgentStyle, 'icon'>> = {
 }
 
 function getAgentStyle(name: string): AgentStyle {
-  if (name === 'orchestra' || name === 'user') return agentStyles[name]
+  if (name === 'ensemble' || name === 'user') return agentStyles[name]
 
   const program = resolveAgentProgram(name)
   const style = programColorStyles[program.color] || programColorStyles.white
@@ -246,13 +246,13 @@ class Monitor {
   }
 
   private async fetchTeam() {
-    const data = await apiGet<{ team: Team }>(`/api/orchestra/teams/${this.teamId}`)
+    const data = await apiGet<{ team: Team }>(`/api/ensemble/teams/${this.teamId}`)
     this.team = data.team
   }
 
   private async fetchMessages() {
     const sinceParam = this.lastSeenTimestamp ? `?since=${encodeURIComponent(this.lastSeenTimestamp)}` : ''
-    const data = await apiGet<{ messages: Message[] }>(`/api/orchestra/teams/${this.teamId}/feed${sinceParam}`)
+    const data = await apiGet<{ messages: Message[] }>(`/api/ensemble/teams/${this.teamId}/feed${sinceParam}`)
     const newMessages = data.messages || []
 
     if (this.lastSeenTimestamp && newMessages.length > 0) {
@@ -374,7 +374,7 @@ class Monitor {
 
   private async sendMessage(content: string) {
     try {
-      await apiPost(`/api/orchestra/teams/${this.teamId}`, {
+      await apiPost(`/api/ensemble/teams/${this.teamId}`, {
         from: 'user',
         to: this.inputTarget,
         content,
@@ -391,18 +391,18 @@ class Monitor {
     try {
       // Fetch final messages BEFORE disbanding
       await this.fetchMessages()
-      await apiPost(`/api/orchestra/teams/${this.teamId}/disband`, {})
+      await apiPost(`/api/ensemble/teams/${this.teamId}/disband`, {})
 
       // Save summary to file — the main Claude session will present it
-      const agentMsgs = this.messages.filter(m => m.from !== 'orchestra' && m.from !== 'user')
+      const agentMsgs = this.messages.filter(m => m.from !== 'ensemble' && m.from !== 'user')
       const agents = [...new Set(agentMsgs.map(m => m.from))]
       const duration = this.formatDuration(Date.now() - this.startTime)
 
       const summaryFile = `/tmp/collab-summary-${this.teamId}.txt`
       const summaryText = agents.map(agent => {
         const msgs = agentMsgs.filter(m => m.from === agent)
-        const first = msgs[0]?.content.replace(/\/tmp\/orchestra[-\w]*/g, '').trim() || ''
-        const last = msgs[msgs.length - 1]?.content.replace(/\/tmp\/orchestra[-\w]*/g, '').trim() || ''
+        const first = msgs[0]?.content.replace(/\/tmp\/ensemble[-\w]*/g, '').trim() || ''
+        const last = msgs[msgs.length - 1]?.content.replace(/\/tmp\/ensemble[-\w]*/g, '').trim() || ''
         return `${agent} (${msgs.length} msgs):\n  Start: ${first.slice(0, 300)}\n  Eind: ${last.slice(0, 500)}`
       }).join('\n\n')
 
@@ -416,7 +416,7 @@ class Monitor {
   }
 
   private getLastAgentMessageTime(): number {
-    const agentMsgs = this.messages.filter(m => m.from !== 'orchestra' && m.from !== 'user')
+    const agentMsgs = this.messages.filter(m => m.from !== 'ensemble' && m.from !== 'user')
     if (agentMsgs.length === 0) return 0
     const last = agentMsgs[agentMsgs.length - 1]
     return new Date(last.timestamp).getTime()
@@ -508,7 +508,7 @@ class Monitor {
       : color.yellow
 
     const elapsed = this.formatDuration(Date.now() - this.startTime)
-    const msgCount = `${this.messages.filter(m => m.from !== 'orchestra').length} msgs`
+    const msgCount = `${this.messages.filter(m => m.from !== 'ensemble').length} msgs`
     const rightInfo = ` ${elapsed} │ ${msgCount} `
 
     const titleLen = this.stripAnsi(title).length
@@ -558,7 +558,7 @@ class Monitor {
 
   private renderMessages(w: number, maxLines: number): string {
     const lines: string[] = []
-    const agentMessages = this.messages.filter(m => m.from !== 'orchestra' || m.content.includes('❌'))
+    const agentMessages = this.messages.filter(m => m.from !== 'ensemble' || m.content.includes('❌'))
 
     // Calculate visible range
     const totalRendered: string[] = []
@@ -598,7 +598,7 @@ class Monitor {
     // Clean and structure content for terminal display
     const contentWidth = w - 8
     const raw = msg.content
-      .replace(/\s*\/tmp\/orchestra[-\w]*\s*/g, '')  // strip leaked path
+      .replace(/\s*\/tmp\/ensemble[-\w]*\s*/g, '')  // strip leaked path
       .trim()
 
     // Parse into structured blocks
@@ -703,7 +703,7 @@ class Monitor {
     )
     lines.push(`${color.gray}${'─'.repeat(w)}${color.reset}\n`)
 
-    const agentMsgs = this.messages.filter(m => m.from !== 'orchestra' && m.from !== 'user')
+    const agentMsgs = this.messages.filter(m => m.from !== 'ensemble' && m.from !== 'user')
     const agents = [...new Set(agentMsgs.map(m => m.from))]
     const duration = this.formatDuration(Date.now() - this.startTime)
 
@@ -729,12 +729,12 @@ class Monitor {
       )
 
       if (msgs.length > 0) {
-        const first = msgs[0].content.replace(/\/tmp\/orchestra[-\w]*/g, '').trim()
+        const first = msgs[0].content.replace(/\/tmp\/ensemble[-\w]*/g, '').trim()
         const firstTrunc = first.slice(0, w - 14) + (first.length > w - 14 ? '...' : '')
         lines.push(`  ${color.dim}Start:${color.reset} ${style.text}${firstTrunc}${color.reset}\n`)
       }
       if (msgs.length > 1) {
-        const last = msgs[msgs.length - 1].content.replace(/\/tmp\/orchestra[-\w]*/g, '').trim()
+        const last = msgs[msgs.length - 1].content.replace(/\/tmp\/ensemble[-\w]*/g, '').trim()
         const lastTrunc = last.slice(0, w - 14) + (last.length > w - 14 ? '...' : '')
         lines.push(`  ${color.dim}Eind:${color.reset}  ${style.text}${lastTrunc}${color.reset}\n`)
       }
@@ -868,7 +868,7 @@ class Monitor {
 
 async function pickTeam(): Promise<string> {
   try {
-    const data = await apiGet<{ teams: Team[] }>('/api/orchestra/teams')
+    const data = await apiGet<{ teams: Team[] }>('/api/ensemble/teams')
     const teams = data.teams.filter(t => t.status === 'active' || t.status === 'forming')
 
     if (teams.length === 0) {
@@ -929,7 +929,7 @@ async function main() {
   let teamId: string
 
   if (args[0] === '--latest' || args[0] === '-l') {
-    const data = await apiGet<{ teams: Team[] }>('/api/orchestra/teams')
+    const data = await apiGet<{ teams: Team[] }>('/api/ensemble/teams')
     const active = data.teams.filter(t => t.status === 'active' || t.status === 'forming')
     if (active.length === 0) {
       console.log(`${color.yellow}No active teams.${color.reset}`)

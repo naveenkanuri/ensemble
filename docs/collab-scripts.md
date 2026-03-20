@@ -26,7 +26,7 @@ Example:
 What it does:
 1. Starts the ensemble server (if not running)
 2. Creates a team via API
-3. Starts the orchestra bridge
+3. Starts the ensemble bridge
 4. Opens the TUI monitor (tmux split or background session)
 5. Starts a background message poller
 6. Waits for agents to begin communicating
@@ -76,7 +76,7 @@ Example:
 # ---STATUS:ACTIVE
 ```
 
-State is tracked in `/tmp/orchestra/<team-id>/.poll-seen` — no need to manage offsets manually.
+State is tracked in `/tmp/ensemble/<team-id>/.poll-seen` — no need to manage offsets manually.
 
 ---
 
@@ -124,13 +124,13 @@ Shows: team name, status (active/finished/stale), message count, last message, d
 | Flag | Description |
 |---|---|
 | `--speed N` | Playback speed multiplier (default: 1, 0 = instant) |
-| `--verbose` | Include orchestra system messages |
+| `--verbose` | Include ensemble system messages |
 
 ---
 
 ## collab-cleanup.sh
 
-**Remove finished team runtime directories** from `/tmp/orchestra/`.
+**Remove finished team runtime directories** from `/tmp/ensemble/`.
 
 ```bash
 ./scripts/collab-cleanup.sh
@@ -154,7 +154,7 @@ These use `fcntl.flock` for atomic JSONL writes to prevent message corruption.
 
 ---
 
-## orchestra-bridge.sh
+## ensemble-bridge.sh
 
 **Message bridge between file-based and HTTP communication.** Started automatically by `collab-launch.sh`.
 
@@ -179,5 +179,5 @@ python3 scripts/parse-messages.py <file> [options]
 |---|---|
 | `--skip N` | Skip first N lines |
 | `--max-content N` | Truncate content to N chars (default: 500) |
-| `--include-orchestra` | Include orchestra system messages |
+| `--include-ensemble` | Include ensemble system messages |
 | `--meta-only` | Output metadata (count, timestamps) instead of messages |

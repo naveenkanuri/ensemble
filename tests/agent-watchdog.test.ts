@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { OrchestraMessage, OrchestraTeam } from '../types/orchestra'
+import type { EnsembleMessage, EnsembleTeam } from '../types/ensemble'
 import {
   AgentWatchdog,
   WATCHDOG_NUDGE_TEXT,
@@ -7,7 +7,7 @@ import {
   getWatchdogStallMs,
 } from '../lib/agent-watchdog'
 
-function makeTeam(overrides: Partial<OrchestraTeam> = {}): OrchestraTeam {
+function makeTeam(overrides: Partial<EnsembleTeam> = {}): EnsembleTeam {
   return {
     id: overrides.id ?? 'team-1',
     name: overrides.name ?? 'alpha',
@@ -31,7 +31,7 @@ function makeTeam(overrides: Partial<OrchestraTeam> = {}): OrchestraTeam {
   }
 }
 
-function makeMessage(overrides: Partial<OrchestraMessage> = {}): OrchestraMessage {
+function makeMessage(overrides: Partial<EnsembleMessage> = {}): EnsembleMessage {
   return {
     id: overrides.id ?? `msg-${Math.random().toString(36).slice(2, 8)}`,
     teamId: overrides.teamId ?? 'team-1',
@@ -48,9 +48,9 @@ describe('AgentWatchdog', () => {
   const originalStallMs = process.env.ENSEMBLE_WATCHDOG_STALL_MS
 
   let nowMs: number
-  let teams: OrchestraTeam[]
-  let messages: OrchestraMessage[]
-  let appended: OrchestraMessage[]
+  let teams: EnsembleTeam[]
+  let messages: EnsembleMessage[]
+  let appended: EnsembleMessage[]
   let sendKeys: ReturnType<typeof vi.fn>
   let pasteFromFile: ReturnType<typeof vi.fn>
   let postRemoteSessionCommand: ReturnType<typeof vi.fn>

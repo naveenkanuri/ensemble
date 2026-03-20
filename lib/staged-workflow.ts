@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid'
 import type {
-  OrchestraTeam,
-  OrchestraTeamAgent,
+  EnsembleTeam,
+  EnsembleTeamAgent,
   StagedWorkflowConfig,
-} from '../types/orchestra'
-import { appendMessage, getMessages } from './orchestra-registry'
+} from '../types/ensemble'
+import { appendMessage, getMessages } from './ensemble-registry'
 import { getRuntime } from './agent-runtime'
 import { resolveAgentProgram } from './agent-config'
 import { collabDeliveryFile } from './collab-paths'
@@ -39,7 +39,7 @@ const EXEC_DONE_PATTERNS = [
   /\bgeïmplementeerd\b/i,
 ]
 
-type ActiveAgent = Pick<OrchestraTeamAgent, 'name' | 'program' | 'hostId' | 'status'>
+type ActiveAgent = Pick<EnsembleTeamAgent, 'name' | 'program' | 'hostId' | 'status'>
 
 interface PromptContext {
   agent: ActiveAgent
@@ -48,7 +48,7 @@ interface PromptContext {
 }
 
 interface StagedWorkflowManagerOptions {
-  team: OrchestraTeam
+  team: EnsembleTeam
   config?: StagedWorkflowConfig
   buildPlanPrompt?: (context: PromptContext) => string
   buildExecPrompt?: (context: PromptContext) => string
@@ -261,7 +261,7 @@ export class StagedWorkflowManager {
     appendMessage(this.options.team.id, {
       id: uuidv4(),
       teamId: this.options.team.id,
-      from: 'orchestra',
+      from: 'ensemble',
       to: 'team',
       content: `[Staged/${phase.toUpperCase()}] ${content}`,
       type: 'chat',
@@ -275,7 +275,7 @@ export class StagedWorkflowManager {
 }
 
 export async function runStagedWorkflow(
-  team: OrchestraTeam,
+  team: EnsembleTeam,
   config?: StagedWorkflowConfig,
   promptBuilders?: Pick<StagedWorkflowManagerOptions, 'buildPlanPrompt' | 'buildExecPrompt' | 'buildVerifyPrompt'>,
 ): Promise<void> {

@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./collab-paths.sh
 source "$SCRIPT_DIR/collab-paths.sh"
 
-ORCHESTRA_ROOT="/tmp/orchestra"
+ENSEMBLE_ROOT="/tmp/ensemble"
 KEEP_RECENT=3
 MIN_AGE_SECONDS=$((24 * 60 * 60))
 MODE="dry-run"
@@ -45,8 +45,8 @@ mtime_epoch() {
 }
 
 finished_entries() {
-  [ -d "$ORCHESTRA_ROOT" ] || return 0
-  find "$ORCHESTRA_ROOT" -mindepth 2 -maxdepth 2 -type f -name .finished -print0 |
+  [ -d "$ENSEMBLE_ROOT" ] || return 0
+  find "$ENSEMBLE_ROOT" -mindepth 2 -maxdepth 2 -type f -name .finished -print0 |
     while IFS= read -r -d '' marker; do
       local runtime_dir ts
       runtime_dir="$(dirname "$marker")"
@@ -89,12 +89,12 @@ REMOVED_KB=0
 
 echo ""
 echo -e "  ${BD}${W}◈ collab cleanup${R}"
-echo -e "  ${D}${ORCHESTRA_ROOT}${R}"
+echo -e "  ${D}${ENSEMBLE_ROOT}${R}"
 echo -e "  ${D}mode: ${MODE} | keep latest ${KEEP_RECENT} | age threshold: 24h${R}"
 echo ""
 
-if [ ! -d "$ORCHESTRA_ROOT" ]; then
-  echo -e "  ${Y}No runtime root found at ${ORCHESTRA_ROOT}${R}"
+if [ ! -d "$ENSEMBLE_ROOT" ]; then
+  echo -e "  ${Y}No runtime root found at ${ENSEMBLE_ROOT}${R}"
   exit 0
 fi
 

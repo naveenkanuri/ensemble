@@ -3,7 +3,7 @@
 
 collab_runtime_dir() {
   local team_id="${1:?team id required}"
-  printf '/tmp/orchestra/%s\n' "$team_id"
+  printf '/tmp/ensemble/%s\n' "$team_id"
 }
 
 collab_messages_file() {

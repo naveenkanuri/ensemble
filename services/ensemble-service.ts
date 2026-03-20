@@ -1,15 +1,15 @@
 /**
- * Orchestra Service — Standalone
+ * Ensemble Service — Standalone
  * No dependency on ai-maestro's agent-registry or agents-core-service.
  * Uses agent-spawner.ts for local/remote agent lifecycle.
  */
 
 import { v4 as uuidv4 } from 'uuid'
-import type { OrchestraTeam, OrchestraMessage, CreateTeamRequest, CollabTemplatesFile } from '../types/orchestra'
+import type { EnsembleTeam, EnsembleMessage, CreateTeamRequest, CollabTemplatesFile } from '../types/ensemble'
 import {
   createTeam, getTeam, updateTeam, loadTeams,
   appendMessage, getMessages,
-} from '../lib/orchestra-registry'
+} from '../lib/ensemble-registry'
 import {
   spawnLocalAgent, killLocalAgent,
   spawnRemoteAgent as spawnRemote, killRemoteAgent,
@@ -59,7 +59,7 @@ interface CompletionSignal {
 const TELEGRAM_BOT_TOKEN = process.env.ENSEMBLE_TELEGRAM_BOT_TOKEN || ''
 const TELEGRAM_CHAT_ID = process.env.ENSEMBLE_TELEGRAM_CHAT_ID || ''
 
-class OrchestraService {
+class EnsembleService {
   private readonly disbandingTeams = new Set<string>()
   private readonly idleCheckTimer: NodeJS.Timeout
   private readonly watchdog: AgentWatchdog
@@ -99,7 +99,7 @@ class OrchestraService {
         appendMessage(team.id, {
           id: uuidv4(),
           teamId: team.id,
-          from: 'orchestra',
+          from: 'ensemble',
           to: 'team',
           content: 'Auto-disband triggered after 60s idle and completion-like agent messages',
           type: 'chat',
@@ -109,17 +109,17 @@ class OrchestraService {
         await writeDisbandSummary(team.id)
         await disbandTeam(team.id)
       } catch (err) {
-        console.error(`[Orchestra] Auto-disband failed for ${team.id}:`, err)
+        console.error(`[Ensemble] Auto-disband failed for ${team.id}:`, err)
       } finally {
         this.disbandingTeams.delete(team.id)
       }
     }
   }
 
-  private shouldAutoDisband(team: OrchestraTeam): boolean {
+  private shouldAutoDisband(team: EnsembleTeam): boolean {
     const messages = getMessages(team.id)
-    const nonOrchestraMessages = messages.filter(message => message.from !== 'orchestra')
-    const lastMessage = nonOrchestraMessages[nonOrchestraMessages.length - 1]
+    const nonEnsembleMessages = messages.filter(message => message.from !== 'ensemble')
+    const lastMessage = nonEnsembleMessages[nonEnsembleMessages.length - 1]
     if (!lastMessage) return false
 
     // Robust timestamp handling: skip idle check if no timestamp available
@@ -167,7 +167,7 @@ class OrchestraService {
   }
 }
 
-const orchestraService = new OrchestraService()
+const ensembleService = new EnsembleService()
 
 function formatDuration(durationMs: number): string {
   const durationMin = Math.max(0, Math.round(durationMs / 60000))
@@ -215,7 +215,7 @@ function sendTelegramSummary(params: {
   )
 
   curl.on('error', err => {
-    console.error('[Orchestra] Failed to start Telegram notification:', err)
+    console.error('[Ensemble] Failed to start Telegram notification:', err)
   })
   curl.unref()
 }
@@ -224,7 +224,7 @@ async function routeToHost(_program: string, preferredHostId?: string): Promise<
   if (preferredHostId) {
     const host = getHostById(preferredHostId)
     if (host) return preferredHostId
-    console.warn(`[Orchestra] Unknown host ${preferredHostId}, falling back to self`)
+    console.warn(`[Ensemble] Unknown host ${preferredHostId}, falling back to self`)
   }
   return getSelfHostId()
 }
@@ -237,13 +237,13 @@ export function loadCollabTemplate(templateName?: string): CollabTemplatesFile['
     const data: CollabTemplatesFile = JSON.parse(raw)
     const template = data.templates[templateName]
     if (!template) {
-      console.warn(`[Orchestra] Unknown template "${templateName}", falling back to default roles`)
+      console.warn(`[Ensemble] Unknown template "${templateName}", falling back to default roles`)
       return undefined
     }
-    console.log(`[Orchestra] Loaded template "${templateName}" (${template.name})`)
+    console.log(`[Ensemble] Loaded template "${templateName}" (${template.name})`)
     return template
   } catch (err) {
-    console.warn(`[Orchestra] Failed to load templates:`, err)
+    console.warn(`[Ensemble] Failed to load templates:`, err)
     return undefined
   }
 }
@@ -302,9 +302,9 @@ export function buildPromptPreview(params: {
   ].join(' ')
 }
 
-export async function createOrchestraTeam(
+export async function createEnsembleTeam(
   request: CreateTeamRequest
-): Promise<ServiceResult<{ team: OrchestraTeam }>> {
+): Promise<ServiceResult<{ team: EnsembleTeam }>> {
   const team = createTeam(request)
   const cwd = request.workingDirectory || process.cwd()
   const worktreeMap = new Map<string, WorktreeInfo>()
@@ -325,15 +325,15 @@ export async function createOrchestraTeam(
           team.agents[i].worktreePath = worktreeInfo.path
           team.agents[i].worktreeBranch = worktreeInfo.branch
           appendMessage(team.id, {
-            id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+            id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
             content: `🌳 Worktree created for ${agentSpec.name}: ${worktreeInfo.branch}`,
             type: 'chat', timestamp: new Date().toISOString(),
           })
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : String(err)
-          console.error(`[Orchestra] Failed to create worktree for ${agentSpec.name}:`, message)
+          console.error(`[Ensemble] Failed to create worktree for ${agentSpec.name}:`, message)
           appendMessage(team.id, {
-            id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+            id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
             content: `⚠️ Worktree creation failed for ${agentSpec.name}: ${message}. Using shared directory.`,
             type: 'chat', timestamp: new Date().toISOString(),
           })
@@ -364,11 +364,11 @@ export async function createOrchestraTeam(
     ensureCollabDirs(team.id)
     const promptFile = collabPromptFile(team.id, agentSpec.name)
     fs.writeFileSync(promptFile, prompt)
-    console.log(`[Orchestra] Prompt for ${agentSpec.name}: ${prompt}`)
+    console.log(`[Ensemble] Prompt for ${agentSpec.name}: ${prompt}`)
 
     try {
       let agentId: string
-      console.log(`[Orchestra] Spawning ${agentName} (${agentSpec.program}) on ${hostId} (self=${isSelf(hostId)})`)
+      console.log(`[Ensemble] Spawning ${agentName} (${agentSpec.program}) on ${hostId} (self=${isSelf(hostId)})`)
 
       if (isSelf(hostId)) {
         const agentCwd = worktreeMap.get(agentSpec.name)?.path || cwd
@@ -391,16 +391,16 @@ export async function createOrchestraTeam(
       team.agents[i].status = 'active'
 
       appendMessage(team.id, {
-        id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
         content: `${agentSpec.name} (${agentSpec.program} @ ${hostId}) has joined #${team.name}`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
-      console.error(`[Orchestra] Failed to spawn ${agentName}:`, message)
+      console.error(`[Ensemble] Failed to spawn ${agentName}:`, message)
       team.agents[i].status = 'idle'
       appendMessage(team.id, {
-        id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
         content: `Failed to spawn ${agentName}: ${message}`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
@@ -425,24 +425,24 @@ export async function createOrchestraTeam(
           if (hostId && !isSelf(hostId)) {
             const host = getHostById(hostId)
             if (host && await isRemoteSessionReady(host.url, sessionName)) {
-              console.log(`[Orchestra] ${sessionName} is remotely reachable (${Math.round((Date.now() - start) / 1000)}s)`)
+              console.log(`[Ensemble] ${sessionName} is remotely reachable (${Math.round((Date.now() - start) / 1000)}s)`)
               return true
             }
           } else {
             const output = await runtime.capturePane(sessionName, 50)
             if (output.includes(readyMarker)) {
-              console.log(`[Orchestra] ${sessionName} is ready (${Math.round((Date.now() - start) / 1000)}s)`)
+              console.log(`[Ensemble] ${sessionName} is ready (${Math.round((Date.now() - start) / 1000)}s)`)
               return true
             }
           }
         } catch { /* not ready yet */ }
         await new Promise(r => setTimeout(r, 1000))
       }
-      console.error(`[Orchestra] ${sessionName} did not become ready within ${maxWait / 1000}s`)
+      console.error(`[Ensemble] ${sessionName} did not become ready within ${maxWait / 1000}s`)
       return false
     }
 
-    console.log(`[Orchestra] Waiting for all ${activeAgents.length} agents to be ready...`)
+    console.log(`[Ensemble] Waiting for all ${activeAgents.length} agents to be ready...`)
     const readyResults = await Promise.all(
       activeAgents.map(agent => {
         const sessionName = `${team.name}-${agent.name}`
@@ -455,7 +455,7 @@ export async function createOrchestraTeam(
 
     for (const nr of notReady) {
       appendMessage(team.id, {
-        id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
         content: `❌ ${nr.agent.name} failed to start — timed out`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
@@ -463,7 +463,7 @@ export async function createOrchestraTeam(
 
     if (ready.length < 2) {
       appendMessage(team.id, {
-        id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
         content: `❌ Team start aborted: only ${ready.length}/${activeAgents.length} agents ready`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
@@ -476,7 +476,7 @@ export async function createOrchestraTeam(
     if (request.staged) {
       // Staged mode: skip normal prompt injection, run plan→exec→verify workflow
       appendMessage(team.id, {
-        id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
         content: `🚀 All ${ready.length} agents ready — starting staged workflow (plan → exec → verify)`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
@@ -503,23 +503,23 @@ export async function createOrchestraTeam(
         `Focus on bugs, regressions, missing tests, and mismatches with the agreed approach.`,
       ].join(' ')
 
-      // Run in background so createOrchestraTeam returns immediately
+      // Run in background so createEnsembleTeam returns immediately
       runStagedWorkflow(team, request.stagedConfig, {
         buildPlanPrompt: ({ agent, teammates, index }) => buildStagedPlanPrompt(agent.name, teammates, index),
         buildExecPrompt: ({ teammates }) => buildStagedExecPrompt(teammates),
         buildVerifyPrompt: ({ teammateToReview }) => buildStagedVerifyPrompt(teammateToReview),
       }).catch(err => {
         const message = err instanceof Error ? err.message : String(err)
-        console.error(`[Orchestra] Staged workflow failed for ${team.id}:`, message)
+        console.error(`[Ensemble] Staged workflow failed for ${team.id}:`, message)
         appendMessage(team.id, {
-          id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+          id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
           content: `❌ Staged workflow failed: ${message}`,
           type: 'chat', timestamp: new Date().toISOString(),
         })
       })
     } else {
       // Normal mode: inject prompts simultaneously
-      console.log(`[Orchestra] All ${ready.length} agents ready — injecting prompts simultaneously`)
+      console.log(`[Ensemble] All ${ready.length} agents ready — injecting prompts simultaneously`)
       await Promise.all(
         ready.map(async ({ agent, sessionName }) => {
           const promptFile = collabPromptFile(team.id, agent.name)
@@ -539,21 +539,21 @@ export async function createOrchestraTeam(
                 await runtime.sendKeys(sessionName, prompt, { literal: true, enter: true })
               }
             }
-            console.log(`[Orchestra] ✓ Prompt injected into ${sessionName}`)
+            console.log(`[Ensemble] ✓ Prompt injected into ${sessionName}`)
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err)
             appendMessage(team.id, {
-              id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+              id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
               content: `❌ Delivery to ${agent.name} failed: ${message}`,
               type: 'chat', timestamp: new Date().toISOString(),
             })
-            console.error(`[Orchestra] ✗ Failed to inject prompt into ${sessionName}:`, err)
+            console.error(`[Ensemble] ✗ Failed to inject prompt into ${sessionName}:`, err)
           }
         })
       )
 
       appendMessage(team.id, {
-        id: uuidv4(), teamId: team.id, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId: team.id, from: 'ensemble', to: 'team',
         content: `🚀 All ${ready.length} agents received their task — collaboration started`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
@@ -563,21 +563,21 @@ export async function createOrchestraTeam(
   return { data: { team }, status: 201 }
 }
 
-export function getOrchestraTeam(teamId: string): ServiceResult<{ team: OrchestraTeam; messages: OrchestraMessage[] }> {
+export function getEnsembleTeam(teamId: string): ServiceResult<{ team: EnsembleTeam; messages: EnsembleMessage[] }> {
   const team = getTeam(teamId)
   if (!team) return { error: 'Team not found', status: 404 }
   return { data: { team, messages: getMessages(teamId) }, status: 200 }
 }
 
-export function listOrchestraTeams(): ServiceResult<{ teams: OrchestraTeam[] }> {
+export function listEnsembleTeams(): ServiceResult<{ teams: EnsembleTeam[] }> {
   return { data: { teams: loadTeams() }, status: 200 }
 }
 
 export async function checkIdleTeams(): Promise<void> {
-  await orchestraService.checkIdleTeams()
+  await ensembleService.checkIdleTeams()
 }
 
-export function getTeamFeed(teamId: string, since?: string): ServiceResult<{ messages: OrchestraMessage[] }> {
+export function getTeamFeed(teamId: string, since?: string): ServiceResult<{ messages: EnsembleMessage[] }> {
   const team = getTeam(teamId)
   if (!team) return { error: 'Team not found', status: 404 }
   return { data: { messages: getMessages(teamId, since) }, status: 200 }
@@ -586,11 +586,11 @@ export function getTeamFeed(teamId: string, since?: string): ServiceResult<{ mes
 export async function sendTeamMessage(
   teamId: string, to: string, content: string, from?: string,
   existingId?: string, existingTimestamp?: string,
-): Promise<ServiceResult<{ message: OrchestraMessage }>> {
+): Promise<ServiceResult<{ message: EnsembleMessage }>> {
   const team = getTeam(teamId)
   if (!team) return { error: 'Team not found', status: 404 }
 
-  const message: OrchestraMessage = {
+  const message: EnsembleMessage = {
     id: existingId || uuidv4(), teamId, from: from || 'user', to, content,
     type: 'chat', timestamp: existingTimestamp || new Date().toISOString(),
   }
@@ -630,7 +630,7 @@ export async function sendTeamMessage(
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err)
       appendMessage(teamId, {
-        id: uuidv4(), teamId, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId, from: 'ensemble', to: 'team',
         content: `❌ Delivery to ${targetAgent.name} failed: ${reason}`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
@@ -650,7 +650,7 @@ export async function writeDisbandSummary(teamId: string): Promise<void> {
   if (!team) return
 
   const messages = getMessages(teamId)
-  const agentMsgs = messages.filter(m => m.from !== 'orchestra' && m.from !== 'user')
+  const agentMsgs = messages.filter(m => m.from !== 'ensemble' && m.from !== 'user')
   if (agentMsgs.length === 0) return
 
   const now = new Date()
@@ -673,8 +673,8 @@ export async function writeDisbandSummary(teamId: string): Promise<void> {
 
   const summaryText = agents.map(agent => {
     const msgs = agentMsgs.filter(m => m.from === agent)
-    const first = msgs[0]?.content.replace(/\/tmp\/orchestra[-\w]*/g, '').trim() || ''
-    const last = msgs[msgs.length - 1]?.content.replace(/\/tmp\/orchestra[-\w]*/g, '').trim() || ''
+    const first = msgs[0]?.content.replace(/\/tmp\/ensemble[-\w]*/g, '').trim() || ''
+    const last = msgs[msgs.length - 1]?.content.replace(/\/tmp\/ensemble[-\w]*/g, '').trim() || ''
     const tokens = tokenUsageMap[agent] || 'unknown'
     return `${agent} (${msgs.length} msgs, tokens: ${tokens}):\n  Start: ${first.slice(0, 300)}\n  Eind: ${last.slice(0, 500)}`
   }).join('\n\n')
@@ -685,10 +685,10 @@ export async function writeDisbandSummary(teamId: string): Promise<void> {
     summaryFile,
     `Task: ${team.description || 'unknown'}\nDuration: ${duration}\nMessages: ${agentMsgs.length}\n\n${summaryText}`,
   )
-  console.log(`[Orchestra] Summary written to ${summaryFile}`)
+  console.log(`[Ensemble] Summary written to ${summaryFile}`)
 }
 
-export async function disbandTeam(teamId: string): Promise<ServiceResult<{ team: OrchestraTeam }>> {
+export async function disbandTeam(teamId: string): Promise<ServiceResult<{ team: EnsembleTeam }>> {
   const team = getTeam(teamId)
   if (!team) return { error: 'Team not found', status: 404 }
 
@@ -706,7 +706,7 @@ export async function disbandTeam(teamId: string): Promise<ServiceResult<{ team:
   for (const agent of team.agents) {
     if (agent.status === 'active') {
       appendMessage(teamId, {
-        id: uuidv4(), teamId, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId, from: 'ensemble', to: 'team',
         content: `${agent.name} has left #${team.name}`,
         type: 'chat', timestamp: new Date().toISOString(),
       })
@@ -741,7 +741,7 @@ export async function disbandTeam(teamId: string): Promise<ServiceResult<{ team:
       const result = await mergeWorktree(worktreeInfo, basePath)
 
       appendMessage(teamId, {
-        id: uuidv4(), teamId, from: 'orchestra', to: 'team',
+        id: uuidv4(), teamId, from: 'ensemble', to: 'team',
         content: result.success
           ? `🌳 Merged ${agent.name}'s worktree (${agent.worktreeBranch})`
           : `⚠️ Merge conflict for ${agent.name}: ${result.conflicts?.join(', ')}`,
@@ -777,7 +777,7 @@ export async function disbandTeam(teamId: string): Promise<ServiceResult<{ team:
   // Optional: save session summary to claude-mem
   try {
     const messages = getMessages(teamId)
-    const agentMessages = messages.filter(m => m.from !== 'orchestra' && m.from !== 'user')
+    const agentMessages = messages.filter(m => m.from !== 'ensemble' && m.from !== 'user')
     if (agentMessages.length > 0) {
       const durationMs = updated!.completedAt && team.createdAt
         ? new Date(updated!.completedAt).getTime() - new Date(team.createdAt).getTime()

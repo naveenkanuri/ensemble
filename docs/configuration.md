@@ -8,7 +8,7 @@ title: Configuration
 
 | Variable | Default | Description |
 |---|---|---|
-| `ORCHESTRA_PORT` | `23000` | Server listening port |
+| `ENSEMBLE_PORT` | `23000` | Server listening port |
 | `ENSEMBLE_URL` | `http://localhost:23000` | CLI target URL |
 | `ENSEMBLE_DATA_DIR` | `~/.aimaestro` | Data directory for team persistence |
 | `ENSEMBLE_HOST_ID` | `local` | Host identifier for agent spawning |
@@ -25,7 +25,7 @@ title: Configuration
 ### Example `.env`
 
 ```bash
-ORCHESTRA_PORT=23000
+ENSEMBLE_PORT=23000
 ENSEMBLE_HOST_ID=macbook
 ENSEMBLE_TELEGRAM_BOT_TOKEN=123456:ABC-DEF
 ENSEMBLE_TELEGRAM_CHAT_ID=your-chat-id

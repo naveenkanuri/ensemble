@@ -11,8 +11,8 @@ export function getEnsembleDataDir(): string {
     || path.join(os.homedir(), '.aimaestro')
 }
 
-export function getOrchestraDataDir(): string {
-  return path.join(getEnsembleDataDir(), 'orchestra')
+export function getEnsembleRegistryDir(): string {
+  return path.join(getEnsembleDataDir(), 'ensemble')
 }
 
 export function getHostsConfigPath(): string {

@@ -52,7 +52,7 @@ json.dump({
     'workingDirectory': os.environ['TCWD']
 }, open(os.environ['PFILE'], 'w'))
 "
-RESULT=$(curl -sf -X POST "$API/api/orchestra/teams" \
+RESULT=$(curl -sf -X POST "$API/api/ensemble/teams" \
   -H "Content-Type: application/json" \
   -d @"$PAYLOAD_FILE")
 rm -f "$PAYLOAD_FILE"
@@ -74,7 +74,7 @@ printf '%s\n' "$TEAM_ID" > /tmp/collab-team-id.txt
 echo -e "  ${CHECK} Team created ${D}(${TEAM_NAME})${R}"
 
 # ─── 3. Bridge (writes its own PID file via single-instance guard) ───
-nohup ~/Documents/ensemble/scripts/orchestra-bridge.sh "$TEAM_ID" "$API" >> "$BRIDGE_LOG_FILE" 2>&1 &
+nohup ~/Documents/ensemble/scripts/ensemble-bridge.sh "$TEAM_ID" "$API" >> "$BRIDGE_LOG_FILE" 2>&1 &
 echo -e "  ${CHECK} Bridge started"
 
 # ─── 4. Monitor ───
