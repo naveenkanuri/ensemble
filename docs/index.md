@@ -8,9 +8,11 @@ title: Home
 
 **Multi-agent collaboration engine** — AI agents that work as one.
 
-Ensemble orchestrates multiple AI agents (Claude Code, Codex, Aider) into collaborative teams that communicate, share findings, and solve problems together in real time.
+Ensemble orchestrates AI agents into collaborative teams. Out of the box it pairs **Claude Code + Codex** — they communicate, share findings, and solve problems together in real time.
 
 > **Status:** Experimental developer tool. Not a production framework (yet).
+>
+> **Default team:** Claude Code (lead) + Codex (worker). You can [add other agents](configuration#supported-agents) like Gemini (experimental) or any custom CLI tool.
 
 ---
 
@@ -56,11 +58,10 @@ See [Configuration → Claude Code integration](configuration#claude-code-integr
 
 ## Key features
 
-- **Team orchestration** — Spawn multi-agent teams with a single API call
+- **Team orchestration** — Spawn multi-agent teams with a single command
 - **Real-time messaging** — Agents communicate via a structured message bus
 - **TUI monitor** — Watch agent collaboration live from your terminal
+- **Extensible** — Add any CLI-based AI agent via `agents.json`
 - **Multi-host support** — Run agents across local and remote machines
-- **Git worktrees** — Each agent works in its own isolated branch
-- **Staged workflows** — Multi-phase plan/execute/verify workflows
 - **Auto-disband** — Intelligent completion detection ends teams when work is done
 - **Telegram notifications** — Get notified when teams finish

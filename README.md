@@ -2,7 +2,7 @@
 
 **Multi-agent collaboration engine** — AI agents that work as one.
 
-Ensemble orchestrates multiple AI agents (Claude Code, Codex, Gemini, Aider) into collaborative teams that communicate, share findings, and solve problems together in real time. Built on tmux-based session management for transparent, observable agent interactions.
+Ensemble orchestrates AI agents into collaborative teams. Out of the box it pairs **Claude Code + Codex** — they communicate, share findings, and solve problems together in real time. Built on tmux-based session management for transparent, observable agent interactions.
 
 > **Status:** Experimental developer tool. macOS and Linux only.
 
@@ -22,9 +22,7 @@ Ensemble orchestrates multiple AI agents (Claude Code, Codex, Gemini, Aider) int
 ### Prerequisites
 
 - Node.js 18+, Python 3.6+, [tmux](https://github.com/tmux/tmux), curl
-- At least one AI agent CLI installed (`claude`, `codex`, `gemini`, or `aider`)
-
-> **Agent support:** **Claude Code + Codex** is fully tested and production-ready. **Gemini CLI** is supported but experimental — it can join teams and communicate, but may become unresponsive due to rate limits or internal agent delegation in Gemini's TUI. **Aider** support is untested.
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Codex](https://github.com/openai/codex) CLIs installed
 
 ### Install & Run
 
@@ -91,6 +89,50 @@ Claude spawns a Codex + Claude team, shows their conversation live in your termi
 ```
 
 This installs the skill, configures permissions, and verifies prerequisites. See the [full setup guide](https://michelhelsdingen.github.io/ensemble/configuration#claude-code-integration) for details.
+
+## Supported Agents
+
+The default team is **Claude Code (lead) + Codex (worker)**. This is the tested, production-ready combination.
+
+| Agent | Status | How to use |
+|---|---|---|
+| **Claude Code + Codex** | Fully tested | Default — just run `/collab` or `collab-launch.sh` |
+| **Gemini CLI** | Experimental | Add explicitly (see below) |
+| **Aider** | Untested | Add explicitly (see below) |
+| **Any CLI tool** | Via `agents.json` | [Add a custom agent](https://michelhelsdingen.github.io/ensemble/configuration#adding-a-custom-agent) |
+
+### Using a different team composition
+
+Three ways to change which agents are on your team:
+
+**1. Name them in your `/collab` prompt:**
+```
+/collab "Review the auth module with gemini and claude"
+```
+
+**2. Use the `--agents` flag with `collab-launch.sh`:**
+```bash
+# First agent = lead, rest = workers
+./scripts/collab-launch.sh "$(pwd)" "Security audit" codex,claude,gemini
+```
+
+**3. Specify agents in the API call:**
+```bash
+curl -X POST http://localhost:23000/api/ensemble/teams \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-team",
+    "description": "Security audit",
+    "agents": [
+      { "program": "codex", "role": "lead" },
+      { "program": "claude", "role": "worker" },
+      { "program": "gemini", "role": "worker" }
+    ],
+    "workingDirectory": "'$(pwd)'"
+  }'
+```
+
+> **Note on Gemini:** Gemini CLI can join teams and send messages, but is experimental. It may stop responding due to free-tier rate limits or internal agent delegation issues in Gemini's TUI. For best results, configure a paid API key via `gemini /auth`.
 
 ## How It Works
 

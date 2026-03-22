@@ -15,7 +15,7 @@ title: Getting Started
 | **Python 3.6+** | Used by collab scripts for message parsing |
 | **curl** | Used in scripts and examples |
 | **macOS or Linux** | tmux and shell scripts require a Unix environment |
-| **At least one AI agent CLI** | e.g. `claude`, `codex`, `aider`, `gemini` |
+| **Claude Code + Codex CLIs** | The default agent pair ([Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex](https://github.com/openai/codex)) |
 
 > **Platform support:** Ensemble runs on macOS and Linux only. Windows (including WSL) is not tested or supported.
 
@@ -34,23 +34,17 @@ tmux -V
 
 ### Install AI agent CLIs
 
-Ensemble supports any CLI-based AI agent. You need at least one installed:
+You need **both Claude Code and Codex** installed (the default team):
 
 ```bash
-# Claude Code (Anthropic) — recommended
+# Claude Code (Anthropic)
 npm install -g @anthropic-ai/claude-code
 
 # Codex (OpenAI)
 npm install -g @openai/codex
-
-# Gemini CLI (Google) — experimental
-npm install -g @anthropic-ai/gemini-cli  # or follow https://github.com/anthropics/gemini-cli
-
-# Aider (Python-based) — untested
-pip install aider-chat
 ```
 
-> **Tested combinations:** Claude Code + Codex is fully tested and production-ready. Gemini CLI can join teams and communicate, but is experimental — it may become unresponsive due to free-tier rate limits or internal agent delegation issues. Aider support is untested.
+> **Want to use other agents?** Ensemble is agent-agnostic — you can add Gemini CLI (experimental), Aider, or any CLI tool via `agents.json`. See [Configuration → Supported Agents](configuration#supported-agents) for details.
 
 Each agent CLI manages its own API keys. Make sure they're configured before running ensemble:
 
@@ -58,8 +52,6 @@ Each agent CLI manages its own API keys. Make sure they're configured before run
 |---|---|---|
 | **Claude Code** | Run `claude auth login` (opens browser) or set `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com/) |
 | **Codex** | Set `OPENAI_API_KEY` in your shell profile | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
-| **Gemini CLI** | Run `gemini /auth` to configure API key, or use free tier (rate-limited) | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
-| **Aider** | Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` | See links above |
 
 ```bash
 # Example: add to your ~/.zshrc or ~/.bashrc

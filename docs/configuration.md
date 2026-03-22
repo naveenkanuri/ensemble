@@ -97,12 +97,29 @@ The agent must support `team-say` and `team-read` shell commands in its PATH for
 
 ### Supported agents
 
-| Agent | Status | Notes |
-|---|---|---|
-| **Claude Code** | Fully tested | Reliable, supports `sendKeys` input |
-| **Codex** | Fully tested | Requires `pasteFromFile` input and `--full-auto` flag |
-| **Gemini CLI** | Experimental | Uses `pasteFromFile` with `--yolo` flag. May become unresponsive due to free-tier rate limits or Gemini's internal agent delegation. If Gemini hits a rate limit, an interactive dialog appears in the TUI that blocks further message processing. Works best with a paid API key configured via `/auth`. |
-| **Aider** | Untested | Basic config included in `agents.json` |
+The default team is **Claude Code (lead) + Codex (worker)**. This is the fully tested combination.
+
+| Agent | Status | Default? | Notes |
+|---|---|---|---|
+| **Claude Code** | Fully tested | Yes (worker) | Uses `sendKeys` input |
+| **Codex** | Fully tested | Yes (lead) | Uses `pasteFromFile` input, `--full-auto` flag |
+| **Gemini CLI** | Experimental | No | Uses `pasteFromFile`, `--yolo` flag. May stop responding due to free-tier rate limits or internal TUI issues. Use a paid API key (`gemini /auth`) for best results. |
+| **Aider** | Untested | No | Basic config included in `agents.json` |
+| **Any CLI tool** | Custom | No | See [Adding a custom agent](#adding-a-custom-agent) |
+
+#### How to use a non-default agent
+
+You don't need to change any config. Just tell ensemble which agents you want:
+
+```bash
+# Via collab-launch.sh (first agent = lead, rest = workers)
+./scripts/collab-launch.sh "$(pwd)" "Security audit" codex,claude,gemini
+
+# Via /collab in Claude Code — name the agents in your prompt
+/collab "Review auth with gemini and claude"
+
+# Via API — specify the agents array
+```
 
 ### Input methods
 
