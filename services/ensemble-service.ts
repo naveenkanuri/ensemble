@@ -378,6 +378,7 @@ export async function createEnsembleTeam(
           program: agentSpec.program,
           workingDirectory: agentCwd,
           hostId,
+          promptFile,
         })
         agentId = spawned.id
       } else {
@@ -421,6 +422,12 @@ export async function createEnsembleTeam(
       const start = Date.now()
       const agentConfig = resolveAgentProgram(program)
       const readyMarker = agentConfig.readyMarker
+
+      // promptInCommand agents launch with the prompt baked in — no readyMarker needed
+      if (agentConfig.inputMethod === 'promptInCommand') {
+        console.log(`[Ensemble] ${sessionName} uses promptInCommand — skipping readyMarker wait`)
+        return true
+      }
       while (Date.now() - start < maxWait) {
         try {
           if (hostId && !isSelf(hostId)) {
@@ -533,7 +540,10 @@ export async function createEnsembleTeam(
               }
             } else {
               const agentCfg = resolveAgentProgram(agent.program)
-              if (agentCfg.inputMethod === 'pasteFromFile') {
+              if (agentCfg.inputMethod === 'promptInCommand') {
+                console.log(`[Ensemble] ✓ ${sessionName} already has prompt (promptInCommand)`)
+                return
+              } else if (agentCfg.inputMethod === 'pasteFromFile') {
                 await runtime.pasteFromFile(sessionName, promptFile)
               } else {
                 const prompt = fs.readFileSync(promptFile, 'utf-8')

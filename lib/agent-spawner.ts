@@ -7,7 +7,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { getRuntime } from './agent-runtime'
 import { getSelfHostId } from './hosts-config'
-import { buildAgentCommand } from './agent-config'
+import { buildAgentCommand, resolveAgentProgram } from './agent-config'
 
 export interface SpawnedAgent {
   id: string
@@ -23,6 +23,7 @@ interface SpawnAgentOptions {
   program: string
   workingDirectory: string
   hostId?: string
+  promptFile?: string
 }
 
 /** Compute tmux session name from agent name */
@@ -53,6 +54,7 @@ export async function spawnLocalAgent(options: SpawnAgentOptions): Promise<Spawn
 
   // Start the AI program
   const startCommand = resolveStartCommand(options.program)
+  const agentCfg = resolveAgentProgram(options.program)
 
   // Forward ENSEMBLE_* and agent-specific env vars to tmux session
   const envForward = Object.entries(process.env)
@@ -62,7 +64,24 @@ export async function spawnLocalAgent(options: SpawnAgentOptions): Promise<Spawn
     .join('; ')
   const envPrefix = envForward ? `${envForward}; ` : ''
 
-  await runtime.sendKeys(sessionName, `unset CLAUDECODE; ${envPrefix}${startCommand}`, { literal: true, enter: true })
+  // For promptInCommand agents (e.g. opencode run), bake the prompt into the launch command
+  let fullCommand = `unset CLAUDECODE; ${envPrefix}${startCommand}`
+  if (agentCfg.inputMethod === 'promptInCommand' && options.promptFile) {
+    fullCommand += ` "$(cat '${options.promptFile}')"`
+  }
+
+  await runtime.sendKeys(sessionName, fullCommand, { literal: true, enter: true })
+
+  // Send postSpawnKeys if configured (e.g. to accept a confirmation dialog)
+  if (agentCfg.postSpawnKeys?.length) {
+    const delay = agentCfg.postSpawnDelayMs ?? 2000
+    await new Promise(r => setTimeout(r, delay))
+    for (const key of agentCfg.postSpawnKeys) {
+      await runtime.sendKeys(sessionName, key, { enter: false })
+      await new Promise(r => setTimeout(r, 300))
+    }
+    console.log(`[Spawner] Sent postSpawnKeys to ${sessionName}: ${agentCfg.postSpawnKeys.join(', ')}`)
+  }
 
   console.log(`[Spawner] Agent ${options.name} started in tmux session ${sessionName}`)
 

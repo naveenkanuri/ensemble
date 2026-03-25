@@ -13,7 +13,11 @@ export interface AgentProgram {
   /** String that appears in tmux pane when agent is ready for input */
   readyMarker: string
   /** How to deliver multi-line prompts */
-  inputMethod: 'pasteFromFile' | 'sendKeys'
+  inputMethod: 'pasteFromFile' | 'sendKeys' | 'promptInCommand'
+  /** Keys to send after spawning (e.g. to accept a confirmation dialog) */
+  postSpawnKeys?: string[]
+  /** Delay in ms before sending postSpawnKeys (default: 2000) */
+  postSpawnDelayMs?: number
   /** Base color name for monitor TUI (e.g. "blue", "green", "magenta", "yellow") */
   color: string
   /** Single-char icon shown in monitor UI (e.g. "◆", "●", "▲", "★") */

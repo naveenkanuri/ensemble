@@ -20,7 +20,7 @@ interface AgentWatchdogDeps {
   getMessages: (teamId: string) => EnsembleMessage[]
   appendMessage: (teamId: string, message: EnsembleMessage) => void
   getRuntime: () => Pick<AgentRuntime, 'sendKeys' | 'pasteFromFile'>
-  resolveAgentProgram: (program: string) => { inputMethod: 'pasteFromFile' | 'sendKeys' }
+  resolveAgentProgram: (program: string) => { inputMethod: 'pasteFromFile' | 'sendKeys' | 'promptInCommand' }
   isSelf: (hostId?: string) => boolean
   getHostById: (hostId: string) => { url: string } | undefined
   postRemoteSessionCommand: (url: string, sessionName: string, text: string) => Promise<void>

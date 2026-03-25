@@ -12,8 +12,10 @@
     "name": "claude",
     "command": "claude",
     "flags": ["--dangerously-skip-permissions"],
-    "readyMarker": "❯",
-    "inputMethod": "sendKeys",
+    "postSpawnKeys": ["Down", "Enter"],
+    "postSpawnDelayMs": 3000,
+    "readyMarker": "bypass permissions",
+    "inputMethod": "pasteFromFile",
     "color": "green",
     "icon": "●"
   },
@@ -37,10 +39,10 @@
   },
   "opencode": {
     "name": "opencode",
-    "command": "opencode",
+    "command": "opencode run",
     "flags": [],
-    "readyMarker": "Ask anything",
-    "inputMethod": "sendKeys",
+    "readyMarker": "",
+    "inputMethod": "promptInCommand",
     "color": "cyan",
     "icon": "▣"
   }
